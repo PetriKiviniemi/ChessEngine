@@ -11,10 +11,10 @@ This is the final techstack in no other particular reason but to learn the tech:
 * Tensorflow   
  - CNN with ChessBase data (Supervised learning)  
 ### Deployment:  
-#### Backend:
-    * Heroku  
-#### Frontend:  
-    * Vercel or Netlify  
+Backend:  
+* Heroku  
+Frontend:  
+* Vercel or Netlify  
 
 ## Description  
 TODO:: 
