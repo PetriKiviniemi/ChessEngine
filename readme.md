@@ -7,6 +7,9 @@ The techstack in no other particular reason but to learn the tech:
 * Typescript  
 ### Backend:  
 * Java  
+* SpringBoot  
+* Websockets  
+  
 ### ML Model:  
 * Tensorflow   
  - CNN with ChessBase data (Supervised learning)  

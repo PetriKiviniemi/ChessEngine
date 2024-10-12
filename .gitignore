@@ -1,0 +1,7 @@
+algorithms/env
+algorithms/data/pgn/*
+algorithms/data/processed/train/*
+algorithms/data/processed/val/*
+algorithms/data/processed/test/*
+algorithms/models/__pycache__/*
+algorithms/scripts/__pycache__/*
