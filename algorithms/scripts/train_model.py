@@ -1,6 +1,7 @@
 from models.cnn_chess_model import create_model
 import os
 import glob
+import tensorflow as tf
 from .utils import data_generator
 
 base_data_dir = 'data/processed'
@@ -44,3 +45,4 @@ history = model.fit(
 
 # Save the model
 model.save(os.path.join(os.path.dirname(__file__), '..', 'models', 'chess_cnn_model.keras'))
+
