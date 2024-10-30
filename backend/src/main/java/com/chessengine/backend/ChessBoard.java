@@ -110,7 +110,9 @@ public class ChessBoard {
      * @moves List of moves, as FEN strings. Func should append to this list
      */
     private void addPawnMoves(int rank, int file, List<String> moves) {
-
+        // Normal movement
+        // Check if first move
+        // Check for enpassant
     }
 
     /*
@@ -123,8 +125,7 @@ public class ChessBoard {
      * 
      * @moves List of moves, as FEN strings. Func should append to this list
      */
-    private void addSlidingMoves(int rank, int file, int[][] directions, List<String> moves) {
-
+    public void addSlidingMoves(int rank, int file, int[][] directions, List<String> moves) {
         // Iterate all the possible sliding directions for the piece
         for (int i = 0; i < directions.length; i++) {
             int x_dir = directions[i][0];
@@ -133,14 +134,14 @@ public class ChessBoard {
             int cur_file = file;
             int piece = board[rank][file];
             int pieceColor = piece & (WHITE | BLACK);
-            // While we are not out of ounds
-            while (!isOutOfBounds(cur_rank, cur_file)) {
+            // While we are not out of bounds
+            while (!isOutOfBounds(cur_rank + x_dir, cur_file + y_dir)) {
                 cur_rank += x_dir;
                 cur_file += y_dir;
                 int targetSqr = board[cur_rank][cur_file];
+                System.out.println(targetSqr);
 
-                if(targetSqr == EMPTY)
-                {
+                if (targetSqr == EMPTY) {
                     moves.add(squareToAlgebraic(cur_file, cur_rank));
                     continue;
                 }
@@ -150,22 +151,23 @@ public class ChessBoard {
                     moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(cur_file, cur_rank));
                     break;
                 }
+
                 break;
             }
         }
     }
 
-private boolean isEnemyPiece(int piece, int attackerColor) {
-    // First check if it's an opposing color piece
-    boolean isEnemy = (piece != EMPTY) && 
-                     ((piece & (WHITE | BLACK)) != attackerColor);
-    
-    // If it's an enemy piece, make sure it's not a king
-    if (isEnemy) {
-        return (piece & 7) != KING;  // & 7 gets piece type
+    private boolean isEnemyPiece(int piece, int attackerColor) {
+        // First check if it's an opposing color piece
+        boolean isEnemy = (piece != EMPTY) &&
+                ((piece & (WHITE | BLACK)) != attackerColor);
+
+        // If it's an enemy piece, make sure it's not a king
+        if (isEnemy) {
+            return (piece & 7) != KING; // & 7 gets piece type
+        }
+        return false;
     }
-    return false;
-}
 
     private String squareToAlgebraic(int file, int rank) {
         if (file < 0 || file > 7 || rank < 0 || rank > 7) {
@@ -185,17 +187,20 @@ private boolean isEnemyPiece(int piece, int attackerColor) {
 
     }
 
-    private boolean isEnemyPiece(int piece) {
-        // CHECK IF ITS WHITE MOVE
-        // return piece != " " && Character.isUpperCase(piece) !=
-        return false;
-    }
-
     private boolean isOutOfBounds(int rank, int file) {
+        if(file < 0 || file > 7 || rank < 0 || rank > 7)
+            return true;
         return false;
     }
 
-    public void hello() {
-        System.out.println("Hello ChessBoard");
+    public void printBoard() {
+        for(int i = 0; i < board.length; i++)
+        {
+            for(int j = 0; j < board[i].length; j++)
+            {
+                System.out.print(board[i][j]);
+            }
+            System.out.print("\n");
+        }
     }
 }
