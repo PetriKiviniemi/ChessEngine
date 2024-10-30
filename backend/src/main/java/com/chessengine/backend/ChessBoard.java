@@ -1,5 +1,6 @@
 package com.chessengine.backend;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChessBoard {
@@ -113,6 +114,22 @@ public class ChessBoard {
         // Normal movement
         // Check if first move
         // Check for enpassant
+        int piece = board[rank][file];
+        int pieceColor = piece & (WHITE | BLACK);
+        boolean hasMoved = !(rank == 1 && pieceColor == BLACK || rank == 6 && pieceColor == WHITE);
+        int moveDir = pieceColor == BLACK ? -1 : 1;
+
+        // One or two squares forward
+        List<Integer> newRanks = new ArrayList<>(!hasMoved ? List.of(rank + moveDir * 1, rank + moveDir * 2) : List.of(rank + moveDir * 1));
+
+        for(int newRank: newRanks)
+        {
+            if (!isOutOfBounds(newRank, file) && board[newRank][file] == EMPTY) {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, newRank));
+            }
+        }
+
+        // Add diagonial capture and en passant capture
     }
 
     /*
@@ -139,7 +156,6 @@ public class ChessBoard {
                 cur_rank += x_dir;
                 cur_file += y_dir;
                 int targetSqr = board[cur_rank][cur_file];
-                System.out.println(targetSqr);
 
                 if (targetSqr == EMPTY) {
                     moves.add(squareToAlgebraic(cur_file, cur_rank));
@@ -184,20 +200,34 @@ public class ChessBoard {
      * @moves List of moves, as FEN strings. Func should append to this list
      */
     private void addKnightMoves(int rank, int file, List<String> moves) {
-
+        int[][] dirs = {
+                { -2, -1 }, { -2, 1 }, // Two left, one up/down
+                { 2, -1 }, { 2, 1 }, // Two right, one up/down
+                { -1, -2 }, { 1, -2 }, // Two up, one left/right
+                { -1, 2 }, { 1, 2 } // Two down, one left/right
+        };
+        int piece = board[rank][file];
+        int attackerColor = piece & (WHITE | BLACK);
+        // Knight can move "2 forward, 1 to the side"
+        for (int[] dir : dirs) {
+            int new_rank = rank + dir[1];
+            int new_file = file + dir[0];
+            if (!isOutOfBounds(new_rank, new_file) &&
+                    (isEnemyPiece(board[new_rank][new_file], attackerColor) || board[new_rank][new_file] == EMPTY)) {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(new_file, new_rank));
+            }
+        }
     }
 
     private boolean isOutOfBounds(int rank, int file) {
-        if(file < 0 || file > 7 || rank < 0 || rank > 7)
+        if (file < 0 || file > 7 || rank < 0 || rank > 7)
             return true;
         return false;
     }
 
     public void printBoard() {
-        for(int i = 0; i < board.length; i++)
-        {
-            for(int j = 0; j < board[i].length; j++)
-            {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
                 System.out.print(board[i][j]);
             }
             System.out.print("\n");
