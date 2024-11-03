@@ -14,6 +14,7 @@ public class ChessBoard {
     private boolean castleBKS = false;
     private boolean castleBQS = false;
 
+    // Store the enpassant rank/file if one exists this turn
     private int enpassantRank = 0;
     private int enpassantFile = 0;
 
@@ -55,6 +56,32 @@ public class ChessBoard {
         board = new int[8][8];
         // We need board state representation
         parseFEN(fen);
+    }
+
+    public void addLegalMoves() {
+        List<String> legalMoves = new ArrayList<String>();
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+            {
+                // Iterate all pieces that are 
+                int piece = board[i][j];
+                if(isOwnPiece(piece))
+                {
+                    // Remove color data
+                    switch(piece & 7)
+                    {
+                        case ROOK -> addSlidingMoves(i, j, new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}, legalMoves);
+                        case KNIGHT -> addKnightMoves(i, j, legalMoves);
+                        case BISHOP -> addSlidingMoves(i, j, new int[][] {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}}, legalMoves);
+                        case QUEEN -> addSlidingMoves(i, j, new int[][] {{1,0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}}, legalMoves);
+                        case KING -> addKingMoves(i, j, legalMoves);
+                        case PAWN -> addPawnMoves(i, j, legalMoves);
+                        default -> {}
+                    };
+                }
+            }
+        }
     }
 
     public void parseFEN(String fen) {
@@ -120,16 +147,37 @@ public class ChessBoard {
         int moveDir = pieceColor == BLACK ? -1 : 1;
 
         // One or two squares forward
-        List<Integer> newRanks = new ArrayList<>(!hasMoved ? List.of(rank + moveDir * 1, rank + moveDir * 2) : List.of(rank + moveDir * 1));
+        int oneStepRank = rank + moveDir;
+        int twoStepRank = rank + moveDir * 2;
 
-        for(int newRank: newRanks)
+        if(!isOutOfBounds(oneStepRank, file) && board[oneStepRank][file] == EMPTY)
         {
-            if (!isOutOfBounds(newRank, file) && board[newRank][file] == EMPTY) {
-                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, newRank));
+            moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, oneStepRank));
+            // Check for initial two step move
+            if(!hasMoved && !isOutOfBounds(twoStepRank, file) && board[twoStepRank][file] == EMPTY)
+            {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, twoStepRank));
             }
         }
 
         // Add diagonial capture and en passant capture
+        for(int diagFile = -1; diagFile < 2; diagFile += 2)
+        {
+            int newFile = file + diagFile;
+            if(isOutOfBounds(rank + moveDir, newFile))
+                continue;
+
+            // Can eat
+            if(isEnemyPiece(board[rank + moveDir][newFile], pieceColor))
+            {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, rank + moveDir));
+            }
+
+            if(isEnemyPiece(board[rank][newFile], pieceColor) && enpassantRank == rank && enpassantFile == newFile)
+            {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, rank + moveDir));
+            }
+        }
     }
 
     /*
@@ -171,6 +219,14 @@ public class ChessBoard {
                 break;
             }
         }
+    }
+
+    private boolean isOwnPiece(int piece)
+    {
+        boolean isOwn = (piece != EMPTY) &&
+        ((piece & (WHITE | BLACK)) == colorToMove);
+
+        return isOwn;
     }
 
     private boolean isEnemyPiece(int piece, int attackerColor) {
@@ -215,6 +271,24 @@ public class ChessBoard {
             if (!isOutOfBounds(new_rank, new_file) &&
                     (isEnemyPiece(board[new_rank][new_file], attackerColor) || board[new_rank][new_file] == EMPTY)) {
                 moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(new_file, new_rank));
+            }
+        }
+    }
+
+    private void addKingMoves(int rank, int file, List<String> moves)
+    {
+        int[][] dirs = {
+            {1,0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}
+        };
+        for(int[] dir : dirs)
+        {
+            int newRank = rank + dir[1];
+            int newFile = file = dir[0];
+            int piece = board[newRank][newFile];
+            int attackerColor = piece & (WHITE | BLACK);
+            if(!isOutOfBounds(newRank, newFile) && (isEnemyPiece(piece, attackerColor) || piece == EMPTY))
+            {
+                moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, newRank));
             }
         }
     }
