@@ -91,7 +91,17 @@ public class ChessBoard {
 
     public int[][][] encodeBoardToTensor()
     {
-        int[][][] encoded = {};
+        int[][][] encoded = new int[8][8][12];
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+            {
+                int piece = board[i][j];
+                int pieceColor = piece & (WHITE | BLACK);
+                int channel = piece - 1 + (pieceColor == BLACK ? 6 : 0);
+            }
+        }
+        return encoded;
     }
 
     public void parseFEN(String fen) {
