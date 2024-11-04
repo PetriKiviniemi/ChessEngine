@@ -85,7 +85,7 @@ public class ChessWebSocketController {
     private String decodeBestMove(float[] predictions) {
         // Lets check what format the predictions are first
         for (int i = 0; i < predictions.length; i++) {
-            System.out.print(i + " ");
+            System.out.print(predictions[i] + " ");
         }
         return "";
     }

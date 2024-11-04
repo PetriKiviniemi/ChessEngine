@@ -3,6 +3,11 @@ package com.chessengine.backend;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO:: Add castling rights check
+// Features to add:
+// Update the board state from a move (FEN STRING move->update board state)
+// Convert boardstate to [8][8][12] Tensor for ML convinience
+// 
 public class ChessBoard {
 
     // Current board state
@@ -82,6 +87,11 @@ public class ChessBoard {
                 }
             }
         }
+    }
+
+    public int[][][] encodeBoardToTensor()
+    {
+        int[][][] encoded = {};
     }
 
     public void parseFEN(String fen) {
