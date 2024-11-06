@@ -99,6 +99,9 @@ public class ChessBoard {
                 int piece = board[i][j];
                 int pieceColor = piece & (WHITE | BLACK);
                 int channel = piece - 1 + (pieceColor == BLACK ? 6 : 0);
+                int row = piece / 8;
+                int col = piece % 8;
+                encoded[row][col][channel] = 1;
             }
         }
         return encoded;
