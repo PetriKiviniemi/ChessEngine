@@ -11,6 +11,7 @@ public class BackendApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
+
 		ChessBoard chessBoard = new ChessBoard("rn1qkbnr/pppbpppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
 		chessBoard.printBoard();
 
