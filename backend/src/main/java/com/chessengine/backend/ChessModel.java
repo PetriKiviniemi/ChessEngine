@@ -41,43 +41,35 @@ public class ChessModel implements AutoCloseable {
         }
     }
 
-    public float[] predict(float[][][][] boardState) {
+    public float[] predict(ChessBoard chessBoard) {
         // Create a tensor
-        try (TFloat32 input = TFloat32.tensorOf(Shape.of(1, 8, 8, 12))) {
+        TFloat32 inputTensor = chessBoard.encodeBoardToTensor();
 
-            // Populate the tensor with the board state
-            input.scalars().forEachIndexed((coords, f) -> {
-                f.setFloat(boardState[(int) coords[0]][(int) coords[1]][(int) coords[2]][(int) coords[3]]);
-            });
+        // Feed the tensor to the model
+        Map<String, Tensor> inputs = new HashMap<>();
+        inputs.put("input_layer", inputTensor);
+        Tensor output = this.model.call(inputs).get(0);
 
-            // Feed the tensor to the model
-            Map<String, Tensor> inputs = new HashMap<>();
-            inputs.put("input_layer", input);
-            Tensor output = this.model.call(inputs).get(0);
+        // Make predictions using the model
+        float[] predictions = new float[4672];
+        output.asRawTensor().data().asFloats().read(predictions);
 
-            // Make predictions using the model
-            float[] predictions = new float[4672];
-            output.asRawTensor().data().asFloats().read(predictions);
+        int[] top5Predictions = getTopKIndices(predictions, 5);
+        List<String> legalMoves = new ArrayList<>();
 
-            int[] top5Predictions = getTopKIndices(predictions, 5);
-            List<String> legalMoves = new ArrayList<>();
+        for (int pred : top5Predictions) {
+            int[] move = chessBoard.decodeMove(pred);
+            // TODO:: We have to code chess board logic
+            // So we can first get the legal moves of the current boardState
+            // Then we can decode the predicted move (as int) to chess coordinates
+            // Then convert the chess coordinates to chess Move (FEN NOTATION?)
+            // then check if the move is in the legal moves, if so, append
 
-            for (int pred : top5Predictions) {
-                // TODO:: We have to code chess board logic
-                // So we can first get the legal moves of the current boardState
-                // Then we can decode the predicted move (as int) to chess coordinates
-                // Then convert the chess coordinates to chess Move (FEN NOTATION?)
-                // then check if the move is in the legal moves, if so, append
-
-                // It is good to code the chess in backend, so we can validate moves
-                // We can also render the html serverside if the move is valid!
-            }
-
-            return predictions;
-        } catch (Exception e) {
-            System.out.println(e);
-            throw new RuntimeException("Failed to predict: ", e);
+            // It is good to code the chess in backend, so we can validate moves
+            // We can also render the html serverside if the move is valid!
         }
+
+        return predictions;
     }
 
     @Override

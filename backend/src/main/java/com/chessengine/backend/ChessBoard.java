@@ -1,12 +1,17 @@
 package com.chessengine.backend;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.tensorflow.ndarray.Shape;
+import org.tensorflow.ndarray.buffer.FloatDataBuffer;
+import org.tensorflow.types.TFloat32;
 
 // TODO:: Add castling rights check
 // Features to add:
 // Update the board state from a move (FEN STRING move->update board state)
-// Convert boardstate to [8][8][12] Tensor for ML convinience
+// updated board state to a FEN string (Move as a FEN string) 
 // 
 public class ChessBoard {
 
@@ -35,6 +40,19 @@ public class ChessBoard {
     static final int ROOK = 4;
     static final int QUEEN = 5;
     static final int KING = 6;
+
+    public int[][] getBoardState() {
+        return board;
+    }
+
+    public int[] decodeMove(int encodedMove) {
+        int fromSquare = Math.floorDiv(encodedMove, 64);
+        int toSquare = encodedMove % 64;
+        int[] retVal = new int[2];
+        retVal[0] = fromSquare;
+        retVal[1] = toSquare;
+        return retVal;
+    }
 
     public static int mapFenCharToPiece(char c) {
         int piece = switch (Character.toLowerCase(c)) {
@@ -89,22 +107,23 @@ public class ChessBoard {
         }
     }
 
-    public int[][][] encodeBoardToTensor()
-    {
-        int[][][] encoded = new int[8][8][12];
-        for(int i = 0; i < 8; i++)
-        {
-            for(int j = 0; j < 8; j++)
-            {
+    public TFloat32 encodeBoardToTensor() {
+        Shape shape = Shape.of(8, 8, 12);
+        TFloat32 tensor = TFloat32.tensorOf(shape);
+        
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 int piece = board[i][j];
-                int pieceColor = piece & (WHITE | BLACK);
-                int channel = piece - 1 + (pieceColor == BLACK ? 6 : 0);
-                int row = piece / 8;
-                int col = piece % 8;
-                encoded[row][col][channel] = 1;
+                if (piece != 0) {  // Assuming 0 represents empty square
+                    int pieceColor = piece & (WHITE | BLACK);
+                    int channel = piece - 1 + (pieceColor == BLACK ? 6 : 0);
+                    
+                    // Set the value to 1 at the appropriate position
+                    tensor.setFloat(1, i, j, channel);
+                }
             }
         }
-        return encoded;
+        return tensor;
     }
 
     public void parseFEN(String fen) {

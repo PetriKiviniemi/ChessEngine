@@ -32,9 +32,8 @@ public class ChessWebSocketController {
     public ResponseEntity<String> handleChessMode(@RequestBody Map<String, String> body) throws JsonProcessingException {
         try {
             String FENstring = body.get("FENstring");
-            float[][][][] boardState = convertFenToBoardState(FENstring);
-            System.out.print("FEN was converted to boardState: " + boardState.toString());
-            float[] predictions = chessModel.predict(boardState);
+            ChessBoard chessBoard = new ChessBoard(FENstring);
+            float[] predictions = chessModel.predict(chessBoard);
             System.out.print("Predictions were made: " + predictions.toString());
             String bestMove = decodeBestMove(predictions);
             return ResponseEntity.ok(objectMapper.writeValueAsString(Map.of("best_move", bestMove)));
