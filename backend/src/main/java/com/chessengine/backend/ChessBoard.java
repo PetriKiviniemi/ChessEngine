@@ -115,9 +115,10 @@ public class ChessBoard {
         board = new int[8][8];
         // We need board state representation
         parseFEN(fen);
+        printBoard();
     }
 
-    public void addLegalMoves() {
+    public List<String> getLegalMoves() {
         List<String> legalMoves = new ArrayList<String>();
         for(int i = 0; i < 8; i++)
         {
@@ -141,6 +142,7 @@ public class ChessBoard {
                 }
             }
         }
+        return legalMoves;
     }
 
     public TFloat32 encodeBoardToTensor() {
@@ -152,7 +154,9 @@ public class ChessBoard {
                 int piece = board[i][j];
                 if (piece != 0) {  // Assuming 0 represents empty square
                     int pieceColor = piece & (WHITE | BLACK);
-                    int channel = piece - 1 + (pieceColor == BLACK ? 6 : 0);
+                    int pieceType = piece & 0b111; // Remove the color
+                    int channel = pieceType - 1 + (pieceColor == BLACK ? 6 : 0);
+                    System.out.println("Channel: " + channel);
                     
                     // Set the value to 1 at the appropriate position
                     tensor.setFloat(1, i, j, channel);

@@ -4,6 +4,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,7 @@ public class ChessWebSocketController {
             String FENstring = body.get("FENstring");
             ChessBoard chessBoard = new ChessBoard(FENstring);
             List<String> predictions = chessModel.predict(chessBoard);
-            System.out.print("Predictions were made: " + predictions.toString());
-            return ResponseEntity.ok(objectMapper.writeValueAsString(Map.of("best_move", bestMove)));
+            return ResponseEntity.ok(predictions.get(0));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to calculate the best move!");

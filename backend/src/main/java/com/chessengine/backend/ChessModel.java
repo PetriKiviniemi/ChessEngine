@@ -45,22 +45,28 @@ public class ChessModel implements AutoCloseable {
         // Create a tensor
         TFloat32 inputTensor = chessBoard.encodeBoardToTensor();
 
+        System.out.println("Tensor created, inputting to NN");
         // Feed the tensor to the model
         Map<String, Tensor> inputs = new HashMap<>();
         inputs.put("input_layer", inputTensor);
         Tensor output = this.model.call(inputs).get(0);
+        System.out.println("Done");
 
         // Make predictions using the model
         float[] predictions = new float[4672];
         output.asRawTensor().data().asFloats().read(predictions);
 
         int[] top5Predictions = getTopKIndices(predictions, 5);
-        List<String> legalMoves = new ArrayList<>();
-        chessBoard.addLegalMoves();
+        List<String> possibleMoves = new ArrayList<>();
+        List<String> currentLegalMoves = chessBoard.getLegalMoves();
 
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
             String moveFen = chessBoard.getMoveFen(move[0], move[1]);
+            if(currentLegalMoves.contains(moveFen))
+            {
+                possibleMoves.add(moveFen);
+            }
 
             // TODO:: We have to code chess board logic
             // So we can first get the legal moves of the current boardState
@@ -72,7 +78,7 @@ public class ChessModel implements AutoCloseable {
             // We can also render the html serverside if the move is valid!
         }
 
-        return legalMoves;
+        return possibleMoves;
     }
 
     @Override
