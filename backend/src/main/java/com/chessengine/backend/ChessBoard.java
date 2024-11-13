@@ -54,6 +54,32 @@ public class ChessBoard {
         return retVal;
     }
 
+    public String getMoveFen(int fromSquare, int toSquare)
+    {
+        // Convert to chess board coordinates
+        int fromRow = 7 - (fromSquare / 8);
+        int fromCol = fromSquare % 8;
+        int toRow = 7 - (toSquare / 8);
+        int toCol = toSquare % 8;
+
+        int piece = board[fromRow][toCol];
+
+        //Construct FEN notation string
+        char pieceFEN = mapPieceToFenChar(piece);
+        StringBuilder fenNot = new StringBuilder();
+
+        // Append piece
+        fenNot.append(pieceFEN);
+
+        // Append from and to squares
+        fenNot.append((char) ('a' + fromCol));
+        fenNot.append(String.valueOf(fromRow + 1));
+        fenNot.append((char) ('a' + toCol));
+        fenNot.append(String.valueOf(toRow + 1));
+
+        return fenNot.toString();
+    }
+
     public static int mapFenCharToPiece(char c) {
         int piece = switch (Character.toLowerCase(c)) {
             case 'p' -> ROOK;
@@ -69,6 +95,16 @@ public class ChessBoard {
             piece |= Character.isUpperCase(c) ? WHITE : BLACK;
 
         return piece;
+    }
+
+    private static char mapPieceToFenChar(int piece) {
+        if ((piece & 0b1000) > 0) {
+            return "PNBRQK".charAt(piece & 0b111);
+        } else if ((piece & 0b10000) > 0) {
+            return "pnbrqk".charAt(piece & 0b111);
+        } else {
+            return ' ';
+        }
     }
 
     public ChessBoard() {

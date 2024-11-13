@@ -41,7 +41,7 @@ public class ChessModel implements AutoCloseable {
         }
     }
 
-    public float[] predict(ChessBoard chessBoard) {
+    public List<String> predict(ChessBoard chessBoard) {
         // Create a tensor
         TFloat32 inputTensor = chessBoard.encodeBoardToTensor();
 
@@ -56,9 +56,12 @@ public class ChessModel implements AutoCloseable {
 
         int[] top5Predictions = getTopKIndices(predictions, 5);
         List<String> legalMoves = new ArrayList<>();
+        chessBoard.addLegalMoves();
 
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
+            String moveFen = chessBoard.getMoveFen(move[0], move[1]);
+
             // TODO:: We have to code chess board logic
             // So we can first get the legal moves of the current boardState
             // Then we can decode the predicted move (as int) to chess coordinates
@@ -69,7 +72,7 @@ public class ChessModel implements AutoCloseable {
             // We can also render the html serverside if the move is valid!
         }
 
-        return predictions;
+        return legalMoves;
     }
 
     @Override

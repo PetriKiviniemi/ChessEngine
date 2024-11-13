@@ -33,9 +33,8 @@ public class ChessWebSocketController {
         try {
             String FENstring = body.get("FENstring");
             ChessBoard chessBoard = new ChessBoard(FENstring);
-            float[] predictions = chessModel.predict(chessBoard);
+            List<String> predictions = chessModel.predict(chessBoard);
             System.out.print("Predictions were made: " + predictions.toString());
-            String bestMove = decodeBestMove(predictions);
             return ResponseEntity.ok(objectMapper.writeValueAsString(Map.of("best_move", bestMove)));
         } catch (Exception e) {
             e.printStackTrace();
