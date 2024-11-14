@@ -44,6 +44,7 @@ def data_generator(data_dir, batch_size):
 
 def predict_best_move(model, board_state):
     encoded_board_state = encode_board_state(board_state)
+    print(encoded_board_state)
 
     # Expand into 2d matrix
     input_board = np.expand_dims(encoded_board_state, axis=0)

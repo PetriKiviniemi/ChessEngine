@@ -63,6 +63,7 @@ public class ChessModel implements AutoCloseable {
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
             String moveFen = chessBoard.getMoveFen(move[0], move[1]);
+            System.out.println(moveFen);
             if(currentLegalMoves.contains(moveFen))
             {
                 possibleMoves.add(moveFen);

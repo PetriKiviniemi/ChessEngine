@@ -54,8 +54,7 @@ public class ChessBoard {
         return retVal;
     }
 
-    public String getMoveFen(int fromSquare, int toSquare)
-    {
+    public String getMoveFen(int fromSquare, int toSquare) {
         // Convert to chess board coordinates
         int fromRow = 7 - (fromSquare / 8);
         int fromCol = fromSquare % 8;
@@ -64,7 +63,7 @@ public class ChessBoard {
 
         int piece = board[fromRow][toCol];
 
-        //Construct FEN notation string
+        // Construct FEN notation string
         char pieceFEN = mapPieceToFenChar(piece);
         StringBuilder fenNot = new StringBuilder();
 
@@ -120,25 +119,26 @@ public class ChessBoard {
 
     public List<String> getLegalMoves() {
         List<String> legalMoves = new ArrayList<String>();
-        for(int i = 0; i < 8; i++)
-        {
-            for(int j = 0; j < 8; j++)
-            {
-                // Iterate all pieces that are 
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                // Iterate all pieces that are
                 int piece = board[i][j];
-                if(isOwnPiece(piece))
-                {
+                if (isOwnPiece(piece)) {
                     // Remove color data
-                    switch(piece & 7)
-                    {
-                        case ROOK -> addSlidingMoves(i, j, new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}, legalMoves);
+                    switch (piece & 0b111) {
+                        case ROOK ->
+                            addSlidingMoves(i, j, new int[][] { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }, legalMoves);
                         case KNIGHT -> addKnightMoves(i, j, legalMoves);
-                        case BISHOP -> addSlidingMoves(i, j, new int[][] {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}}, legalMoves);
-                        case QUEEN -> addSlidingMoves(i, j, new int[][] {{1,0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}}, legalMoves);
+                        case BISHOP -> addSlidingMoves(i, j, new int[][] { { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } },
+                                legalMoves);
+                        case QUEEN -> addSlidingMoves(i, j, new int[][] { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
+                                { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }, legalMoves);
                         case KING -> addKingMoves(i, j, legalMoves);
                         case PAWN -> addPawnMoves(i, j, legalMoves);
-                        default -> {}
-                    };
+                        default -> {
+                        }
+                    }
+                    ;
                 }
             }
         }
@@ -146,23 +146,20 @@ public class ChessBoard {
     }
 
     public TFloat32 encodeBoardToTensor() {
-        Shape shape = Shape.of(8, 8, 12);
+        Shape shape = Shape.of(1, 8, 8, 12);
         TFloat32 tensor = TFloat32.tensorOf(shape);
-        
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 int piece = board[i][j];
-                if (piece != 0) {  // Assuming 0 represents empty square
+                if (piece != 0) { // Assuming 0 represents empty square
                     int pieceColor = piece & (WHITE | BLACK);
                     int pieceType = piece & 0b111; // Remove the color
                     int channel = pieceType - 1 + (pieceColor == BLACK ? 6 : 0);
-                    System.out.println("Channel: " + channel);
-                    
-                    // Set the value to 1 at the appropriate position
-                    tensor.setFloat(1, i, j, channel);
+                    tensor.setFloat(1.0f, 0, i, j, channel);
                 }
             }
         }
+        System.out.println(tensor);
         return tensor;
     }
 
@@ -232,31 +229,26 @@ public class ChessBoard {
         int oneStepRank = rank + moveDir;
         int twoStepRank = rank + moveDir * 2;
 
-        if(!isOutOfBounds(oneStepRank, file) && board[oneStepRank][file] == EMPTY)
-        {
+        if (!isOutOfBounds(oneStepRank, file) && board[oneStepRank][file] == EMPTY) {
             moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, oneStepRank));
             // Check for initial two step move
-            if(!hasMoved && !isOutOfBounds(twoStepRank, file) && board[twoStepRank][file] == EMPTY)
-            {
+            if (!hasMoved && !isOutOfBounds(twoStepRank, file) && board[twoStepRank][file] == EMPTY) {
                 moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(file, twoStepRank));
             }
         }
 
         // Add diagonial capture and en passant capture
-        for(int diagFile = -1; diagFile < 2; diagFile += 2)
-        {
+        for (int diagFile = -1; diagFile < 2; diagFile += 2) {
             int newFile = file + diagFile;
-            if(isOutOfBounds(rank + moveDir, newFile))
+            if (isOutOfBounds(rank + moveDir, newFile))
                 continue;
 
             // Can eat
-            if(isEnemyPiece(board[rank + moveDir][newFile], pieceColor))
-            {
+            if (isEnemyPiece(board[rank + moveDir][newFile], pieceColor)) {
                 moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, rank + moveDir));
             }
 
-            if(isEnemyPiece(board[rank][newFile], pieceColor) && enpassantRank == rank && enpassantFile == newFile)
-            {
+            if (isEnemyPiece(board[rank][newFile], pieceColor) && enpassantRank == rank && enpassantFile == newFile) {
                 moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, rank + moveDir));
             }
         }
@@ -303,10 +295,9 @@ public class ChessBoard {
         }
     }
 
-    private boolean isOwnPiece(int piece)
-    {
+    private boolean isOwnPiece(int piece) {
         boolean isOwn = (piece != EMPTY) &&
-        ((piece & (WHITE | BLACK)) == colorToMove);
+                ((piece & (WHITE | BLACK)) == colorToMove);
 
         return isOwn;
     }
@@ -357,19 +348,21 @@ public class ChessBoard {
         }
     }
 
-    private void addKingMoves(int rank, int file, List<String> moves)
-    {
+    private void addKingMoves(int rank, int file, List<String> moves) {
         int[][] dirs = {
-            {1,0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}
+                { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 }
         };
-        for(int[] dir : dirs)
-        {
+        for (int[] dir : dirs) {
             int newRank = rank + dir[1];
-            int newFile = file = dir[0];
-            int piece = board[newRank][newFile];
+            int newFile = file + dir[0];
+            int piece = board[rank][file];
             int attackerColor = piece & (WHITE | BLACK);
-            if(!isOutOfBounds(newRank, newFile) && (isEnemyPiece(piece, attackerColor) || piece == EMPTY))
-            {
+
+            if(isOutOfBounds(newRank, newFile))
+                continue;
+
+            int newSquare = board[newRank][newFile];
+            if (isEnemyPiece(newSquare, attackerColor) || newSquare == EMPTY) {
                 moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(newFile, newRank));
             }
         }
