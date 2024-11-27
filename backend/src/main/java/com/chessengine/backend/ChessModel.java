@@ -3,16 +3,20 @@ package com.chessengine.backend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.tensorflow.Graph;
 import org.tensorflow.GraphOperation;
 import org.tensorflow.Operation;
+import org.tensorflow.Result;
 import org.tensorflow.SavedModelBundle;
 import org.springframework.stereotype.Component;
 import org.springframework.core.io.ClassPathResource;
@@ -21,6 +25,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
+import org.tensorflow.Signature;
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
@@ -34,6 +39,10 @@ public class ChessModel implements AutoCloseable {
             Resource modelResource = resourceLoader.getResource("classpath:models/saved_model.pb");
             String modelPath = modelResource.getFile().getParentFile().getAbsolutePath();
             this.model = SavedModelBundle.load(modelPath, "serve");
+            for(Signature sig : this.model.signatures())
+            {
+                System.out.println("Signature name: " + sig.toString());
+            }
 
             // Access the graph
         } catch (Exception e) {
@@ -47,21 +56,22 @@ public class ChessModel implements AutoCloseable {
 
         System.out.println("Tensor created, inputting to NN");
         // Feed the tensor to the model
-        Map<String, Tensor> inputs = new HashMap<>();
-        inputs.put("input_layer", inputTensor);
-        Tensor output = this.model.call(inputs).get(0);
-        System.out.println("Done");
+        Result res = this.model.call(Collections.singletonMap("input_layer", inputTensor));
+        Tensor output = res.get(0);
 
         // Make predictions using the model
         float[] predictions = new float[4672];
         output.asRawTensor().data().asFloats().read(predictions);
 
+        System.out.println("Java first few predictions:" + Arrays.toString(Arrays.copyOfRange(predictions, 0, 10)));
         int[] top5Predictions = getTopKIndices(predictions, 5);
+
         List<String> possibleMoves = new ArrayList<>();
         List<String> currentLegalMoves = chessBoard.getLegalMoves();
 
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
+            System.out.println("Prediction:" + pred);
             String moveFen = chessBoard.getMoveFen(move[0], move[1]);
             System.out.println(moveFen);
             if(currentLegalMoves.contains(moveFen))

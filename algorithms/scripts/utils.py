@@ -43,6 +43,8 @@ def data_generator(data_dir, batch_size):
             yield np.array(X_batch), np.array(y_batch)
 
 def predict_best_move(model, board_state):
+    print(model.to_json())
+
     encoded_board_state = encode_board_state(board_state)
     print(encoded_board_state)
 
@@ -50,10 +52,12 @@ def predict_best_move(model, board_state):
     input_board = np.expand_dims(encoded_board_state, axis=0)
 
     move_probabilities = model.predict(input_board)[0]
+    print("Python first few predictions:", move_probabilities[:10])
     top_5_predictions = np.argsort(move_probabilities)[-5:][::-1]
 
     legal_moves = []
     for prediction in top_5_predictions:
+        print("Prediction: ", prediction)
         from_square, to_square = decode_move(prediction)
         move = chess.Move(from_square, to_square)
         if move in board_state.legal_moves:

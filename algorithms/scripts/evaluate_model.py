@@ -6,11 +6,13 @@ import tensorflow as tf
 from .utils import data_generator, predict_best_move
 
 test_data_dir = 'data/processed/test'
+model_path = os.path.join(os.path.dirname(__file__), '..', 'models')
+model_name = 'chess_cnn_model.keras'
 
 # Params
 batch_size = 32
 
-model = tf.keras.models.load_model("models/chess_cnn_model.h5")
+model = tf.keras.models.load_model(os.path.join(model_path, model_name))
 
 test_gen = data_generator(test_data_dir, batch_size)
 test_steps = len(glob.glob(os.path.join(test_data_dir, "*_X.npy"))) // batch_size
@@ -20,7 +22,7 @@ test_loss, test_accuracy = model.evaluate(test_gen, steps=test_steps)
 
 # Generate chessboard and check what move the model will give as best move
 board_state = chess.Board()
-board_state.push_san("e4") # White to move, push E4 pawn
+# board_state.push_san("e4") # White to move, push E4 pawn
 
 best_move = predict_best_move(model, board_state)
 if best_move:

@@ -159,7 +159,6 @@ public class ChessBoard {
                 }
             }
         }
-        System.out.println(tensor);
         return tensor;
     }
 
