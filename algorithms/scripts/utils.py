@@ -50,6 +50,7 @@ def predict_best_move(model, board_state):
 
     # Expand into 2d matrix
     input_board = np.expand_dims(encoded_board_state, axis=0)
+    print("Input tensor: ", input_board)
 
     move_probabilities = model.predict(input_board)[0]
     print("Python first few predictions:", move_probabilities[:10])
@@ -57,9 +58,9 @@ def predict_best_move(model, board_state):
 
     legal_moves = []
     for prediction in top_5_predictions:
-        print("Prediction: ", prediction)
         from_square, to_square = decode_move(prediction)
         move = chess.Move(from_square, to_square)
+        print("Prediction: ", prediction, from_square, to_square, move)
         if move in board_state.legal_moves:
             legal_moves.append((move, move_probabilities[prediction]))
     

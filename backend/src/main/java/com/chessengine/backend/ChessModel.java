@@ -53,7 +53,6 @@ public class ChessModel implements AutoCloseable {
     public List<String> predict(ChessBoard chessBoard) {
         // Create a tensor
         TFloat32 inputTensor = chessBoard.encodeBoardToTensor();
-
         System.out.println("Tensor created, inputting to NN");
         // Feed the tensor to the model
         Result res = this.model.call(Collections.singletonMap("input_layer", inputTensor));
@@ -71,9 +70,9 @@ public class ChessModel implements AutoCloseable {
 
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
-            System.out.println("Prediction:" + pred);
             String moveFen = chessBoard.getMoveFen(move[0], move[1]);
             System.out.println(moveFen);
+
             if(currentLegalMoves.contains(moveFen))
             {
                 possibleMoves.add(moveFen);

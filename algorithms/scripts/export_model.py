@@ -18,6 +18,13 @@ model.export(model_path_in_backend)
 loaded = tf.saved_model.load(model_path)
 print("Model loaded successfully")
 
+# Check the model weights
+weights = loaded.get_weights()
+
+# Print the shape of each weight matrix to verify they're loaded correctly
+for i, weight in enumerate(weights):
+    print(f"Layer {i} weight shape: {weight.shape}")
+
 # Print the model signatures
 signatures = loaded.signatures
 for signature_key in signatures.keys():

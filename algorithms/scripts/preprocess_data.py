@@ -14,6 +14,7 @@ def encode_board_state(board):
             channel = piece.piece_type - 1 + (6 if piece.color == chess.BLACK else 0)
             row, col = divmod(square, 8)
             encoded_board[row, col, channel] = 1
+            print(row, col, piece.piece_type, int(piece.color), channel)
     return encoded_board
 
 def encode_move(move):

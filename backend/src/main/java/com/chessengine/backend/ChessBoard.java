@@ -1,10 +1,13 @@
 package com.chessengine.backend;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
+import org.tensorflow.ndarray.buffer.DataBuffers;
 import org.tensorflow.ndarray.buffer.FloatDataBuffer;
 import org.tensorflow.types.TFloat32;
 
@@ -54,34 +57,57 @@ public class ChessBoard {
         return retVal;
     }
 
-    public String getMoveFen(int fromSquare, int toSquare) {
-        // Convert to chess board coordinates
-        int fromRow = 7 - (fromSquare / 8);
-        int fromCol = fromSquare % 8;
-        int toRow = 7 - (toSquare / 8);
-        int toCol = toSquare % 8;
+    public static int[][] mirrorArrayHorizontally(int[][] array) {
+        int rows = array.length;
+        int[][] new_board = new int[8][8];
 
-        int piece = board[fromRow][toCol];
-
-        // Construct FEN notation string
-        char pieceFEN = mapPieceToFenChar(piece);
-        StringBuilder fenNot = new StringBuilder();
-
-        // Append piece
-        fenNot.append(pieceFEN);
-
-        // Append from and to squares
-        fenNot.append((char) ('a' + fromCol));
-        fenNot.append(String.valueOf(fromRow + 1));
-        fenNot.append((char) ('a' + toCol));
-        fenNot.append(String.valueOf(toRow + 1));
-
-        return fenNot.toString();
+        for (int i = 0; i < rows / 2; i++) { // Swap rows
+            int[] temp = new_board[i];
+            new_board[i] = array[rows - i - 1];
+            new_board[rows - i - 1] = temp;
+        }
+        return new_board;
     }
+
+public String getMoveFen(int fromSquare, int toSquare) {
+    // Invert row calculation to match the board representation
+    int fromRow = 7 - (fromSquare / 8); // Invert row index
+    int fromCol = fromSquare % 8;
+    int toRow = 7 - (toSquare / 8); // Invert row index
+    int toCol = toSquare % 8;
+
+    // Get the piece from the board at the 'from' position
+    int piece = board[7 - fromRow][fromCol];
+    
+    // Correctly extract piece type by masking out color bits
+    int pieceType = piece & 0b111;
+    System.out.println("Piece Type: " + pieceType);
+    
+    // Map the piece to its corresponding FEN character
+    char pieceFEN = mapPieceToFenChar(piece);
+    
+    // Construct FEN notation string
+    StringBuilder fenNot = new StringBuilder();
+    
+    // Append piece and from square
+    if (pieceType != PAWN) { // Skip pawn identifier for pawns
+        fenNot.append(pieceFEN);
+    }
+    
+    // Use standard chess notation (a-h for columns, 1-8 for rows)
+    fenNot.append((char) ('a' + fromCol)); // Column as a-h
+    fenNot.append(8 - fromRow); // Rank as 1-8
+    
+    // Append to square
+    fenNot.append((char) ('a' + toCol)); // Column as a-h
+    fenNot.append(8 - toRow); // Rank as 1-8
+    
+    return fenNot.toString();
+}
 
     public static int mapFenCharToPiece(char c) {
         int piece = switch (Character.toLowerCase(c)) {
-            case 'p' -> ROOK;
+            case 'p' -> PAWN;
             case 'n' -> KNIGHT;
             case 'b' -> BISHOP;
             case 'r' -> ROOK;
@@ -97,12 +123,12 @@ public class ChessBoard {
     }
 
     private static char mapPieceToFenChar(int piece) {
-        if ((piece & 0b1000) > 0) {
-            return "PNBRQK".charAt(piece & 0b111);
-        } else if ((piece & 0b10000) > 0) {
-            return "pnbrqk".charAt(piece & 0b111);
+        int pieceType = piece & 0b111;
+        int pieceColor = piece & (WHITE | BLACK);
+        if (pieceColor == BLACK) {
+            return "PNBRQK".charAt(pieceType);
         } else {
-            return ' ';
+            return "pnbrqk".charAt(pieceType);
         }
     }
 
@@ -148,15 +174,32 @@ public class ChessBoard {
     public TFloat32 encodeBoardToTensor() {
         Shape shape = Shape.of(1, 8, 8, 12);
         TFloat32 tensor = TFloat32.tensorOf(shape);
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                int piece = board[i][j];
-                if (piece != 0) { // Assuming 0 represents empty square
-                    int pieceColor = piece & (WHITE | BLACK);
-                    int pieceType = piece & 0b111; // Remove the color
-                    int channel = pieceType - 1 + (pieceColor == BLACK ? 6 : 0);
-                    tensor.setFloat(1.0f, 0, i, j, channel);
+                for (int k = 0; k < 12; k++) {
+                    tensor.setFloat(0.0f, 0, i, j, k); // Initialize to 0.0f
                 }
+            }
+        }
+
+        System.out.println("Tensor Shape: " + shape);
+        for (int x = 0; x < 64; x++) {
+            int i = x / 8;
+            int j = x % 8;
+
+            int piece = board[i][j];
+
+            if (piece != 0) { // Assuming 0 represents empty square
+                int pieceColor = piece & (WHITE | BLACK);
+                int pieceType = piece & 0b111; // Remove the color
+
+                // For some reason, the piece colors are wrong, even though they are represented
+                // Properly, investigate. Maybe the pieceColor calculation is wrong?
+                // Nevertheless, this produces the correct tensor represntation of the
+                // chessboard
+                int channel = pieceType - 1 + (pieceColor == BLACK ? 0 : 6);
+                tensor.setFloat(1.0f, 0, i, j, channel);
             }
         }
         return tensor;
@@ -357,7 +400,7 @@ public class ChessBoard {
             int piece = board[rank][file];
             int attackerColor = piece & (WHITE | BLACK);
 
-            if(isOutOfBounds(newRank, newFile))
+            if (isOutOfBounds(newRank, newFile))
                 continue;
 
             int newSquare = board[newRank][newFile];
