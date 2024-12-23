@@ -69,41 +69,40 @@ public class ChessBoard {
         return new_board;
     }
 
-public String getMoveFen(int fromSquare, int toSquare) {
-    // Invert row calculation to match the board representation
-    int fromRow = 7 - (fromSquare / 8); // Invert row index
-    int fromCol = fromSquare % 8;
-    int toRow = 7 - (toSquare / 8); // Invert row index
-    int toCol = toSquare % 8;
+    public String getMoveFen(int fromSquare, int toSquare) {
+        // Invert row calculation to match the board representation
+        int fromRow = 7 - (fromSquare / 8); // Invert row index
+        int fromCol = fromSquare % 8;
+        int toRow = 7 - (toSquare / 8); // Invert row index
+        int toCol = toSquare % 8;
 
-    // Get the piece from the board at the 'from' position
-    int piece = board[7 - fromRow][fromCol];
-    
-    // Correctly extract piece type by masking out color bits
-    int pieceType = piece & 0b111;
-    System.out.println("Piece Type: " + pieceType);
-    
-    // Map the piece to its corresponding FEN character
-    char pieceFEN = mapPieceToFenChar(piece);
-    
-    // Construct FEN notation string
-    StringBuilder fenNot = new StringBuilder();
-    
-    // Append piece and from square
-    if (pieceType != PAWN) { // Skip pawn identifier for pawns
-        fenNot.append(pieceFEN);
+        // Get the piece from the board at the 'from' position
+        int piece = board[7 - fromRow][fromCol];
+
+        // Correctly extract piece type by masking out color bits
+        int pieceType = piece & 0b111;
+
+        // Map the piece to its corresponding FEN character
+        char pieceFEN = mapPieceToFenChar(piece);
+
+        // Construct FEN notation string
+        StringBuilder fenNot = new StringBuilder();
+
+        // Append piece and from square
+        if (pieceType != PAWN) { // Skip pawn identifier for pawns
+            fenNot.append(pieceFEN);
+        }
+
+        // Use standard chess notation (a-h for columns, 1-8 for rows)
+        fenNot.append((char) ('a' + fromCol)); // Column as a-h
+        fenNot.append(8 - fromRow); // Rank as 1-8
+
+        // Append to square
+        fenNot.append((char) ('a' + toCol)); // Column as a-h
+        fenNot.append(8 - toRow); // Rank as 1-8
+
+        return fenNot.toString();
     }
-    
-    // Use standard chess notation (a-h for columns, 1-8 for rows)
-    fenNot.append((char) ('a' + fromCol)); // Column as a-h
-    fenNot.append(8 - fromRow); // Rank as 1-8
-    
-    // Append to square
-    fenNot.append((char) ('a' + toCol)); // Column as a-h
-    fenNot.append(8 - toRow); // Rank as 1-8
-    
-    return fenNot.toString();
-}
 
     public static int mapFenCharToPiece(char c) {
         int piece = switch (Character.toLowerCase(c)) {
@@ -147,7 +146,7 @@ public String getMoveFen(int fromSquare, int toSquare) {
         List<String> legalMoves = new ArrayList<String>();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                // Iterate all pieces that are
+                // Iterate all pieces
                 int piece = board[i][j];
                 if (isOwnPiece(piece)) {
                     // Remove color data
@@ -183,7 +182,6 @@ public String getMoveFen(int fromSquare, int toSquare) {
             }
         }
 
-        System.out.println("Tensor Shape: " + shape);
         for (int x = 0; x < 64; x++) {
             int i = x / 8;
             int j = x % 8;
@@ -265,7 +263,7 @@ public String getMoveFen(int fromSquare, int toSquare) {
         int piece = board[rank][file];
         int pieceColor = piece & (WHITE | BLACK);
         boolean hasMoved = !(rank == 1 && pieceColor == BLACK || rank == 6 && pieceColor == WHITE);
-        int moveDir = pieceColor == BLACK ? -1 : 1;
+        int moveDir = pieceColor == BLACK ? 1 : -1;
 
         // One or two squares forward
         int oneStepRank = rank + moveDir;

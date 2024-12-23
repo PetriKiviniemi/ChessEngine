@@ -71,22 +71,14 @@ public class ChessModel implements AutoCloseable {
         for (int pred : top5Predictions) {
             int[] move = chessBoard.decodeMove(pred);
             String moveFen = chessBoard.getMoveFen(move[0], move[1]);
-            System.out.println(moveFen);
 
             if(currentLegalMoves.contains(moveFen))
             {
                 possibleMoves.add(moveFen);
             }
-
-            // TODO:: We have to code chess board logic
-            // So we can first get the legal moves of the current boardState
-            // Then we can decode the predicted move (as int) to chess coordinates
-            // Then convert the chess coordinates to chess Move (FEN NOTATION?)
-            // then check if the move is in the legal moves, if so, append
-
-            // It is good to code the chess in backend, so we can validate moves
-            // We can also render the html serverside if the move is valid!
         }
+
+        System.out.println("Predicted legal moves (in order): " + possibleMoves);
 
         return possibleMoves;
     }
