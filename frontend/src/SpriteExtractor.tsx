@@ -4,6 +4,7 @@ interface SpriteExtractorProps {
   spriteSheetPath: string;
   rows: number;
   cols: number;
+  pieceWidths: number[], // Incase we have different width sprites
   onExtract: (images: string[]) => void; // Callback to retrieve the images
 }
 
@@ -11,6 +12,7 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
   spriteSheetPath,
   rows,
   cols,
+  pieceWidths = [],
   onExtract,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,21 +33,27 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
 
     spriteSheetImg.onload = () => {
       console.log("Loading image...");
-      const pieceWidth = spriteSheetImg.width / cols;
+      let pieceWidth = spriteSheetImg.width / cols;
       const pieceHeight = spriteSheetImg.height / rows;
+
+
       const extractedImages: string[] = [];
 
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
+
+          if(pieceWidths.length > 0)
+            pieceWidth = pieceWidths[j];
+
           canvas.width = pieceWidth;
           canvas.height = pieceHeight;
 
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(
             spriteSheetImg,
-            i * pieceWidth,
-            j * pieceHeight,
+            j * pieceWidth,
+            i * pieceHeight,
             pieceWidth,
             pieceHeight,
             0,
@@ -55,10 +63,11 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
           );
 
           const imgData = canvas.toDataURL("image/png");
+          console.log(imgData)
           extractedImages.push(imgData);
         }
       }
-        onExtract(extractedImages);
+      onExtract(extractedImages);
     };
 
   }, [spriteSheetPath, rows, cols]);

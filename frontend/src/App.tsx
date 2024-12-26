@@ -19,15 +19,17 @@ function App() {
   })
 
   const onExtractCallback = (pieceImages: string[]) => {
+    console.log(pieceImages)
     setChessImages({...chessImages, chessPieces: pieceImages});
   };
 
   return (
     <div className="App">
       <SpriteExtractor
-        spriteSheetPath="assets/chesspieces.png"
-        rows={2}
-        cols={6}
+        spriteSheetPath="assets/spritesheet.png"
+        rows={1}
+        cols={12}
+        pieceWidths={[254, 254, 229, 208, 281, 231, 254, 254, 229, 208, 281, 231]}
         onExtract={onExtractCallback}
       />
       <ChessBoard

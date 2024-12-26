@@ -1,14 +1,9 @@
 package com.chessengine.backend;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
-import org.tensorflow.ndarray.buffer.DataBuffers;
-import org.tensorflow.ndarray.buffer.FloatDataBuffer;
 import org.tensorflow.types.TFloat32;
 
 // TODO:: Add castling rights check
@@ -21,7 +16,10 @@ public class ChessBoard {
     // Current board state
     private int[][] board;
     private int colorToMove = WHITE;
+
     // NOTE:: Could be made into a bitmap in necessary
+    // These are also not necessary since we calculate the
+    // Legal moves with getLegalMoves(), which includes the castling check
     private boolean castleWKS = false;
     private boolean castleWQS = false;
     private boolean castleBKS = false;
