@@ -36,7 +36,6 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
       let pieceWidth = spriteSheetImg.width / cols;
       const pieceHeight = spriteSheetImg.height / rows;
 
-
       const extractedImages: string[] = [];
 
       for (let i = 0; i < rows; i++) {
@@ -45,6 +44,8 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
           if(pieceWidths.length > 0)
             pieceWidth = pieceWidths[j];
 
+          console.log("COL: " + j + " WIDTH: " + pieceWidth);
+
           canvas.width = pieceWidth;
           canvas.height = pieceHeight;
 
@@ -52,7 +53,7 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(
             spriteSheetImg,
-            j * pieceWidth,
+            pieceWidths.slice(0, j).reduce((sum, current) => sum + current, 0),
             i * pieceHeight,
             pieceWidth,
             pieceHeight,

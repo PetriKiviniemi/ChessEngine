@@ -14,27 +14,30 @@ export const mapPieceToSpriteSheetIndex = (piece: number): number => {
 
   switch (piece & 0b111) {
     case PAWN:
-      color == BLACK ? col = 3 : col = 3 + 6;
+      col = 3;
       break;
     case QUEEN:
-      color == BLACK ? col = 4 : col = 4 + 7;
+      col = 4;
       break;
     case KING:
-      color == BLACK ? col = 1 : col = 1 + 7;
+      col = 1;
       break;
     case BISHOP:
-      color == BLACK ? col = 0 : col = 7;
+      col = 0;
       break;
     case KNIGHT:
-      color == BLACK ? col = 2 : col = 2 + 7;
+      col = 2;
       break;
     case ROOK:
-      color == BLACK ? col = 5 : col = 5 + 7;
+      col = 5;
       break;
     default:
       col = -1;
       break;
   }
+
+  if(color == WHITE)
+    col += 6;
 
   return col; 
 };

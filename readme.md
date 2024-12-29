@@ -24,4 +24,4 @@ Frontend:
 TODO:: 
 
 Chess icons by https://opengameart.org/users/johnpablok
-Aggragated icons into a single spritesheet
+Aggragated the chess icons into a single spritesheet
