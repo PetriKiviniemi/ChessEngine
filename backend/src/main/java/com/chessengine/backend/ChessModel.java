@@ -1,33 +1,18 @@
 package com.chessengine.backend;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-import org.tensorflow.Graph;
-import org.tensorflow.GraphOperation;
-import org.tensorflow.Operation;
-import org.tensorflow.Result;
-import org.tensorflow.SavedModelBundle;
-import org.springframework.stereotype.Component;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Component;
+import org.tensorflow.Result;
 import org.tensorflow.SavedModelBundle;
-import org.tensorflow.Session;
 import org.tensorflow.Signature;
 import org.tensorflow.Tensor;
-import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
 
 @Component

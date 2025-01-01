@@ -36,6 +36,9 @@ function App() {
         boardVariables={boardVariables}
         chessImages={chessImages}
       />
+      <div>
+        Chess icons by https://opengameart.org/users/johnpablok
+      </div>
     </div>
   );
 }

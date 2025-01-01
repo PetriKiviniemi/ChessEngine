@@ -16,29 +16,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ChessMoveData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/chess")
-public class ChessWebSocketController {
+public class ChessRestAPI {
     private final ChessModel chessModel;
 
     @Autowired
-    public ChessWebSocketController(ChessModel chessModel) {
+    public ChessRestAPI(ChessModel chessModel) {
         this.chessModel = chessModel;
     }
 
-    @PostMapping("/calculate-best-move")
-    public ResponseEntity<String> handleChessMode(@RequestBody Map<String, String> body) throws JsonProcessingException {
+    @PostMapping("/get-move-data")
+    public ResponseEntity<?> handleChessMode(@RequestBody Map<String, String> body) throws JsonProcessingException {
         try {
             String FENstring = body.get("FENstring");
             ChessBoard chessBoard = new ChessBoard(FENstring);
             List<String> predictions = chessModel.predict(chessBoard);
-            return ResponseEntity.ok(predictions.get(0));
+            ChessMoveData data = new ChessMoveData(predictions.get(0), chessBoard.getLegalMoves());
+            return ResponseEntity.ok(data);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to calculate the best move!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to get chess move data!");
         }
     }
 }

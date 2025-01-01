@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import { fetchMoveData } from "./Api";
 import {
   mapPieceToSpriteSheetIndex,
   mapFenCharToPiece,
@@ -29,6 +30,7 @@ interface ChessBoardProps {
   chessImages: ChessImages;
 }
 
+
 export interface ChessBoardVariables {
   boardState: number[][];
   colorToMove: number;
@@ -41,6 +43,25 @@ export interface ChessBoardVariables {
   fullMoveClock: number;
 }
 
+const ChessPieceStyle = {
+  width: 70,
+  height: 70,
+  aspectRatio: 1,
+  margin: 0,
+  marginTop: 3,
+  padding: 0,
+};
+
+const ChessPieceContainerStyle = {
+  width: 80,
+  height: 80,
+  aspectRatio: 1,
+  margin: 0,
+  padding: 0,
+  justifyContent: 'center',
+  alignContent: 'center',
+};
+
 const ChessBoard: React.FC<ChessBoardProps> = ({
   boardVariables,
   chessImages,
@@ -49,46 +70,53 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     console.log(boardVariables);
   });
 
+  useEffect(() => {
+    // TODO:: Now we need to convert the boardState 2d array to
+    // FEN string so we can send it over to the server
+    fetchMoveData();
+  }, [])
+
   return (
-    <div style={{ alignItems: "center", justifyContent: "center", flexWrap: 'wrap' }}>
-      <img
-        src={"assets/chessboard.png"}
+    <div
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        flexWrap: "wrap",
+      }}
+    >
+      <div
         style={{
-          height: "40em",
           position: "absolute",
-          zIndex: -1,
+          display: "grid",
+          height: "40em",
+          width: "40em",
+          gridTemplateColumns: "repeat(8, 0fr)",
+          gridTemplateRows: "repeat(8, 0fr)",
+          gap: 0,
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
         }}
-      ></img>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(8, 0fr)",
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: 2,
-        }}
       >
-        {boardVariables.boardState.map((row) => {
-          return row.map((piece) => {
+        {boardVariables.boardState.map((row, rowIdx) => {
+          return row.map((piece, index) => {
             let idx = mapPieceToSpriteSheetIndex(piece);
-            console.log(idx);
             return (
-              <div>
-                {idx >= 0 ? 
-                <img
-                  src={chessImages.chessPieces[idx]}
-                  style={{
-                    height: 70,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    aspectRatio: 1,
-                    border: '2px solid black'
-                  }}
-                /> : <div style={{height: 70, aspectRatio: 1}}/>
+              <div
+                style={
+                  (index + rowIdx) % 2 == 0
+                    ? { ...ChessPieceContainerStyle, backgroundColor: "rgb(117, 149, 85)" }
+                    : { ...ChessPieceContainerStyle, backgroundColor: "rgb(237, 237, 209)" }
                 }
+              >
+                {idx >= 0 ? (
+                  <img
+                    src={chessImages.chessPieces[idx]}
+                    style={ChessPieceStyle}
+                  />
+                ) : (
+                  <div style={ChessPieceStyle} />
+                )}
               </div>
             );
           });
@@ -129,6 +157,7 @@ export const parseFEN = (fenString: string): ChessBoardVariables => {
   let fullMoveClock = 0;
   let enPassantFile = 0;
   let enPassantRank = 0;
+
   if (fenParts[3] != "-") {
     enPassantFile = fenParts[3].charAt(0).charCodeAt(0) - "a".charCodeAt(0);
     enPassantRank = fenParts[3].charAt(1).charCodeAt(0) - "0".charCodeAt(0);

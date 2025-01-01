@@ -6,11 +6,6 @@ import java.util.List;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
 
-// TODO:: Add castling rights check
-// Features to add:
-// Update the board state from a move (FEN STRING move->update board state)
-// updated board state to a FEN string (Move as a FEN string) 
-// 
 public class ChessBoard {
 
     // Current board state
