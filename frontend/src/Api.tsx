@@ -2,10 +2,10 @@ import axios, { AxiosResponse } from "axios";
 
 export interface ChessMoveData {
   legalMoves: string[];
-  bestMoves: string;
+  bestMove: string;
 }
 
-const API_URL = "https://localhost:8080/api/chess/";
+const API_URL = "http://localhost:8080/api/chess/";
 const api = axios.create({
   baseURL: API_URL,
 });
@@ -16,7 +16,7 @@ export const fetchMoveData = async (
   try {
     const response: AxiosResponse<ChessMoveData> = await api.post(
       "/get-move-data",
-      boardState
+      {"FENstring": boardState}
     );
     return response.data;
   } catch (error) {

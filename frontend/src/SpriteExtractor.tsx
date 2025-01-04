@@ -44,8 +44,6 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
           if(pieceWidths.length > 0)
             pieceWidth = pieceWidths[j];
 
-          console.log("COL: " + j + " WIDTH: " + pieceWidth);
-
           canvas.width = pieceWidth;
           canvas.height = pieceHeight;
 
@@ -64,7 +62,6 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
           );
 
           const imgData = canvas.toDataURL("image/png");
-          console.log(imgData)
           extractedImages.push(imgData);
         }
       }
