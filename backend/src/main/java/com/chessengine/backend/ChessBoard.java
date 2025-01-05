@@ -313,7 +313,7 @@ public class ChessBoard {
                 int targetSqr = board[cur_rank][cur_file];
 
                 if (targetSqr == EMPTY) {
-                    moves.add(squareToAlgebraic(cur_file, cur_rank));
+                    moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(cur_file, cur_rank));
                     continue;
                 }
 
@@ -408,7 +408,7 @@ public class ChessBoard {
     }
 
     public void printBoard() {
-        for(int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
             System.out.print("-");
         System.out.println(" ");
         for (int i = 0; i < board.length; i++) {
@@ -418,7 +418,7 @@ public class ChessBoard {
             System.out.print("\n");
         }
         System.out.println(" ");
-        for(int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
             System.out.print("-");
     }
 }

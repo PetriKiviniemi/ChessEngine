@@ -37,6 +37,7 @@ public class ChessRestAPI {
             String FENstring = body.get("FENstring");
             ChessBoard chessBoard = new ChessBoard(FENstring);
             List<String> predictions = chessModel.predict(chessBoard);
+            System.out.println(chessBoard.getLegalMoves());
             ChessMoveData data = new ChessMoveData(predictions.get(0), chessBoard.getLegalMoves());
             return ResponseEntity.ok(data);
         } catch (Exception e) {

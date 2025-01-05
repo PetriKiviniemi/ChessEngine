@@ -207,29 +207,32 @@ export const boardToFenString = (bv: ChessBoardVariables): string => {
   return boardStateFenStr;
 };
 
-export const legalMovesToMap = (legalMoves: string[]): Map<number, number[]> => {
+export const legalMovesToMap = (
+  legalMoves: string[]
+): Map<number, number[]> => {
   let map = new Map<number, number[]>();
 
-  const moveToCoordinates = (strCoords:string) : number[] => {
-    const fromRow = strCoords.charAt(0).charCodeAt(0) - 'a'.charCodeAt(0);
-    const fromCol = strCoords.charAt(1).charCodeAt(0);
+  const moveToCoordinates = (strCoords: string): number[] => {
+    // Column (file) is based on 'a' to 'h'
+    const fromCol = strCoords.charAt(0).charCodeAt(0) - "a".charCodeAt(0);
+    const fromRow = 8 - parseInt(strCoords.charAt(1), 10);
 
-    const toRow = strCoords.charAt(2).charCodeAt(0) - 'a'.charCodeAt(0);
-    const toCol = strCoords.charAt(3).charCodeAt(0);
+    const toCol = strCoords.charAt(2).charCodeAt(0) - "a".charCodeAt(0);
+    const toRow = 8 - parseInt(strCoords.charAt(3), 10);
+
+    console.log(strCoords, fromRow, fromCol, toRow, toCol);
 
     return [fromRow * 8 + fromCol, toRow * 8 + toCol];
-  }
+  };
 
-  for(const move of legalMoves)
-  {
+  for (const move of legalMoves) {
     const coords = moveToCoordinates(move);
 
-    if(!map.get(coords[0]))
-    {
+    if (!map.get(coords[0])) {
       map.set(coords[0], []);
     }
     map.get(coords[0])?.push(coords[1]);
   }
 
   return map;
-}
+};

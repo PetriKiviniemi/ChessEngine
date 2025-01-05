@@ -18,21 +18,16 @@ const SpriteExtractor: React.FC<SpriteExtractorProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    console.log("Loading sprites...");
     const canvas = canvasRef.current;
     if (!canvas) return;
-    console.log("Canvas found");
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    console.log("Canvas context loaded");
 
-    console.log("File found... Loading the image");
     const spriteSheetImg = new Image();
     spriteSheetImg.src = spriteSheetPath;
 
     spriteSheetImg.onload = () => {
-      console.log("Loading image...");
       let pieceWidth = spriteSheetImg.width / cols;
       const pieceHeight = spriteSheetImg.height / rows;
 
