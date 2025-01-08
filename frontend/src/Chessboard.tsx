@@ -3,13 +3,14 @@ import {
   boardToFenString,
   ChessBoardVariables,
   ChessImages,
+  EMPTY,
   legalMovesToMap,
   mapPieceToSpriteSheetIndex,
+  parseFEN,
 } from "./ChessboardUtils";
 import { fetchMoveData } from "./Api";
 
 interface ChessBoardProps {
-  boardVariables: ChessBoardVariables;
   chessImages: ChessImages;
 }
 
@@ -37,8 +38,10 @@ interface Position {
   y: number;
 }
 
+const defaultFEN: string =
+  "2r3k1/pp1q1ppp/4pn2/3p2b1/2PP4/2N2N2/PP2QPPP/R4RK1 w - - 3 18";
+
 const ChessBoard: React.FC<ChessBoardProps> = ({
-  boardVariables,
   chessImages,
 }) => {
   const [legalMoves, setLegalMoves] = useState<Map<number, number[]>>();
@@ -48,6 +51,8 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [bestMove, setBestMove] = useState<string>("");
   const [draggedPiece, setDraggedPiece] = useState<number | null>();
   const [dragPosition, setDragPosition] = useState<Position>({ x: 0, y: 0 });
+  const [boardVariables, setBoardVariables] =
+    React.useState<ChessBoardVariables>(() => parseFEN(defaultFEN));
   const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,8 +60,8 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       if (draggedPiece) {
         const boardRect = boardRef.current?.getBoundingClientRect();
         if (boardRect) {
-          const x = e.clientX - boardRect.left
-          const y = e.clientY - boardRect.top
+          const x = e.clientX - boardRect.left;
+          const y = e.clientY - boardRect.top;
           setDragPosition({
             x: x,
             y: y,
@@ -65,19 +70,12 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      setDraggedPiece(null);
-      console.log(document.elementFromPoint(e.clientX, e.clientY))
-    };
-
     if (draggedPiece) {
       document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [draggedPiece]);
 
@@ -115,6 +113,37 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       setLegalMovesToRender(movesToRender);
     };
 
+  const handleDrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if(!draggedPiece) return;
+
+    const boardRect = boardRef.current?.getBoundingClientRect();
+    if(boardRect)
+    {
+      const x = e.clientX - boardRect.left;
+      const y = e.clientY - boardRect.top;
+
+      const squareSize = boardRect.width / 8;
+      const row = Math.floor(y / squareSize);
+      const col = Math.floor(x / squareSize)
+
+      const targetSquare = row * 8 + col;
+      if(legalMoves?.get(draggedPiece)?.includes(targetSquare))
+      {
+        console.log(row, col)
+        const oldRow = Math.floor(draggedPiece / 8);
+        const oldCol = draggedPiece % 8;
+        const draggedPieceType = boardVariables.boardState[oldRow][oldCol];
+        let updatedBoard = boardVariables.boardState;
+        updatedBoard[row][col] = draggedPieceType;
+        updatedBoard[oldRow][oldCol] = EMPTY;
+        setBoardVariables({...boardVariables, boardState: updatedBoard})
+      }
+    }
+    setDraggedPiece(undefined);
+    setLegalMovesToRender(undefined);
+  };
+
   const renderChessPieces = (
     spriteIdx: number,
     rowIdx: number,
@@ -128,26 +157,6 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     if (spriteIdx >= 0) {
       return (
         <div style={{ position: "relative" }}>
-          <img
-            src={chessImages.chessPieces[spriteIdx]}
-            className={`select-none cursor-grab ${
-              isPieceDragged ? "cursor-grabbing fixed" : ""
-            }`}
-            style={{
-              ...ChessPieceStyle,
-              position: isPieceDragged ? "fixed" : "static",
-              left: isPieceDragged ? `${dragPosition.x}px` : "auto",
-              top: isPieceDragged ? `${dragPosition.y}px` : "auto",
-              zIndex: isPieceDragged ? 1000 : "auto",
-              transform: isPieceDragged ? "translate(-50%, -50%)" : "none", // Center to cursor
-              pointerEvents: "auto",
-              userSelect: "none",
-            }}
-            onMouseDown={handleDragStart(rowIdx, colIdx)}
-            draggable={false}
-            row-idx={rowIdx}
-            col-idx={colIdx}
-          />
           {legalMovesToRender?.get(rowIdx * 8 + colIdx) ? (
             <div
               style={{
@@ -165,9 +174,26 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                 transform: "translate(-50%, -50%)", // Centers the circle around the image
               }}
             />
-          ) : (
-            <div />
-          )}
+          ) : undefined}
+          <img
+            src={chessImages.chessPieces[spriteIdx]}
+            className={`select-none cursor-grab ${
+              isPieceDragged ? "cursor-grabbing fixed" : ""
+            }`}
+            style={{
+              ...ChessPieceStyle,
+              position: isPieceDragged ? "fixed" : "static",
+              left: isPieceDragged ? `${dragPosition.x}px` : "auto",
+              top: isPieceDragged ? `${dragPosition.y}px` : "auto",
+              zIndex: isPieceDragged ? 1000 : "auto",
+              transform: isPieceDragged ? "translate(-50%, -50%)" : "none", // Center to cursor
+              pointerEvents: "auto",
+              userSelect: "none",
+            }}
+            onMouseDown={handleDragStart(rowIdx, colIdx)}
+            onMouseUp={handleDrop}
+            draggable={false}
+          />
         </div>
       );
     } else if (legalMovesToRender?.get(rowIdx * 8 + colIdx)) {
@@ -182,7 +208,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         />
       );
     } else {
-      return <div style={ChessPieceStyle} />;
+      return (
+        <div style={ChessPieceStyle}/>
+      );
     }
   };
 
