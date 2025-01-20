@@ -48,7 +48,7 @@ public class ChessModel implements AutoCloseable {
         output.asRawTensor().data().asFloats().read(predictions);
 
         System.out.println("Java first few predictions:" + Arrays.toString(Arrays.copyOfRange(predictions, 0, 10)));
-        int[] top5Predictions = getTopKIndices(predictions, 20);
+        int[] top5Predictions = getTopKIndices(predictions, 10);
 
         List<String> possibleMoves = new ArrayList<>();
         List<String> currentLegalMoves = chessBoard.getLegalMoves();

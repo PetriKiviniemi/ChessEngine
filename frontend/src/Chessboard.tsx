@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  BLACK,
   boardToFenString,
   ChessBoardVariables,
   ChessImages,
   EMPTY,
   legalMovesToMap,
   mapPieceToSpriteSheetIndex,
+  moveToCoordinates,
   parseFEN,
+  WHITE,
 } from "./ChessboardUtils";
 import { fetchMoveData } from "./Api";
 
@@ -38,8 +41,8 @@ interface Position {
   y: number;
 }
 
-const defaultFEN: string =
-  "2r3k1/pp1q1ppp/4pn2/3p2b1/2PP4/2N2N2/PP2QPPP/R4RK1 w - - 3 18";
+const defaultFEN: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 
 const ChessBoard: React.FC<ChessBoardProps> = ({
   chessImages,
@@ -54,6 +57,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [boardVariables, setBoardVariables] =
     React.useState<ChessBoardVariables>(() => parseFEN(defaultFEN));
   const boardRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -79,15 +83,39 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     };
   }, [draggedPiece]);
 
+
+  // Game logic
   useEffect(() => {
+    console.log(boardVariables)
     const boardFen = boardToFenString(boardVariables);
     fetchMoveData(boardFen).then((res) => {
       if (res) {
         setBestMove(res.bestMove);
         setLegalMoves(legalMovesToMap(res.legalMoves));
       }
+      console.log("HERE")
+
+      // Game logic here
+      if(boardVariables.colorToMove == BLACK && res?.bestMove)
+      {
+        // Move piece
+        const coords = moveToCoordinates(res.bestMove)
+        const oldRow = Math.floor(coords[0] / 8);
+        const oldCol = coords[0] % 8;
+        const newRow = Math.floor(coords[1] / 8);
+        const newCol = coords[1] % 8;
+
+        const oldPieceType = boardVariables.boardState[oldRow][oldCol];
+        let updatedBoard = boardVariables.boardState;
+        updatedBoard[newRow][newCol] = oldPieceType;
+        updatedBoard[oldRow][oldCol] = EMPTY;
+        setBoardVariables({...boardVariables, boardState: updatedBoard, colorToMove: WHITE})
+      }
     });
-  }, []);
+
+
+    // If black to move, move the piece NN has suggested
+  }, [boardVariables]);
 
   const handleDragStart =
     (row: number, col: number) => (e: React.MouseEvent) => {
@@ -130,14 +158,13 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       const targetSquare = row * 8 + col;
       if(legalMoves?.get(draggedPiece)?.includes(targetSquare))
       {
-        console.log(row, col)
         const oldRow = Math.floor(draggedPiece / 8);
         const oldCol = draggedPiece % 8;
         const draggedPieceType = boardVariables.boardState[oldRow][oldCol];
         let updatedBoard = boardVariables.boardState;
         updatedBoard[row][col] = draggedPieceType;
         updatedBoard[oldRow][oldCol] = EMPTY;
-        setBoardVariables({...boardVariables, boardState: updatedBoard})
+        setBoardVariables({...boardVariables, boardState: updatedBoard, colorToMove: BLACK})
       }
     }
     setDraggedPiece(undefined);

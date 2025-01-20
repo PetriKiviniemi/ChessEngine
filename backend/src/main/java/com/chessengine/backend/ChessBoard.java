@@ -115,6 +115,7 @@ public class ChessBoard {
     }
 
     private static char mapPieceToFenChar(int piece) {
+        System.out.println("PIECE: " + piece);
         int pieceType = piece & 0b111;
         int pieceColor = piece & (WHITE | BLACK);
         if (pieceColor == BLACK) {
@@ -318,7 +319,7 @@ public class ChessBoard {
                 }
 
                 // Check if enemy piece and capturable
-                if (isEnemyPiece(piece, pieceColor)) {
+                if (isEnemyPiece(targetSqr, pieceColor)) {
                     moves.add(squareToAlgebraic(file, rank) + squareToAlgebraic(cur_file, cur_rank));
                     break;
                 }
